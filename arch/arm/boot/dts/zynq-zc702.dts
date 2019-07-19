@@ -1,0 +1,473 @@
+/*
+ *  Copyright (C) 2011 - 2014 Xilinx
+ *  Copyright (C) 2012 National Instruments Corp.
+ *
+ * This software is licensed under the terms of the GNU General Public
+ * License version 2, as published by the Free Software Foundation, and
+ * may be copied, distributed, and modified under those terms.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ */
+/dts-v1/;
+/include/ "zynq-7000.dtsi"
+
+/include/ "zynq-zc702_pl.dtsi"
+
+/ {
+	model = "Jlab V1.0 Development Board";
+	compatible = "xlnx,zynq-zc702", "xlnx,zynq-7000";
+	aliases {
+		ethernet0 = &gem0;
+		i2c0 = &i2c0;
+		serial0 = &uart0;
+		spi0 = &qspi;
+		mmc0 = &sdhci0;
+		usb0 = &usb0;
+	};
+	memory {
+		device_type = "memory";
+		reg = <0x0 0x40000000>;  //1G
+	};
+	chosen {
+		bootargs = "console=ttyPS0,115200 earlyprintk root=/dev/nfs nfsroot=192.168.15.10:/home/rootfs_ubuntu/rootfs,tcp nolock ip=192.168.15.11:192.168.15.10:192.168.15.1:255.255.255.0:jf315:eth0:off rw uio_pdrv_genirq.of_id=generic-uio";
+	}; 
+	usb_phy0: phy0@e0002000 {
+		//compatible = "usb-nop-xceiv";
+		compatible = "ulpi-phy";
+		#phy-cells = <0>;
+		reg = <0xe0002000 0x1000>;
+		view-port = <0x0170>;
+		drv-vbus;
+	};
+};
+&axi_gpio_0 {
+	compatible = "generic-uio";
+};
+
+&gp_reg_top_0 {
+	compatible = "generic-uio";
+};
+
+&gp_reg_top_1 {
+	compatible = "generic-uio";
+};
+
+&qspi {
+	flash0: flash@0 {
+		compatible = "s25fl256s1";
+	};
+};
+
+&qspi {
+	flash0: flash@0 {
+		compatible = "micron,n25q128a11";
+	};
+};
+
+&amba {
+	ocm: sram@fffc0000 {
+		compatible = "mmio-sram";
+		reg = <0xfffc0000 0x10000>;
+	};
+};
+
+
+&can0 {
+	status = "okay";
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_can0_default>;
+};
+
+&clkc {
+	ps-clk-frequency = <33333333>;
+};
+
+&gem0 {
+	status = "okay";
+	phy-mode = "rgmii-id";
+	phy-handle = <&ethernet_phy>;
+	//pinctrl-names = "default";
+	//pinctrl-0 = <&pinctrl_gem0_default>;  //modify by YHL 2019-06-17w
+	phy-reset-gpio = <&gpio0 11 0>;
+	phy-reset-active-low;
+
+	ethernet_phy: ethernet-phy@7 {
+		reg = <7>;
+		device_type = "ethernet-phy";
+	};
+};
+
+&gpio0 {
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_gpio0_default>;
+};
+
+&pinctrl0 {
+	pinctrl_can0_default: can0-default {
+		mux {
+			function = "can0";
+			groups = "can0_9_grp";
+		};
+
+		conf {
+			groups = "can0_9_grp";
+			slew-rate = <0>;
+			io-standard = <1>;
+		};
+
+		conf-rx {
+			pins = "MIO46";
+			bias-high-impedance;
+		};
+
+		conf-tx {
+			pins = "MIO47";
+			bias-disable;
+		};
+	};
+
+	pinctrl_gem0_default: gem0-default {
+		mux {
+			function = "ethernet0";
+			groups = "ethernet0_0_grp";
+		};
+
+		conf {
+			groups = "ethernet0_0_grp";
+			slew-rate = <0>;
+			io-standard = <4>;
+		};
+
+		conf-rx {
+			pins = "MIO22", "MIO23", "MIO24", "MIO25", "MIO26", "MIO27";
+			bias-high-impedance;
+			low-power-disable;
+		};
+
+		conf-tx {
+			pins = "MIO16", "MIO17", "MIO18", "MIO19", "MIO20", "MIO21";
+			bias-disable;
+			low-power-enable;
+		};
+
+		mux-mdio {
+			function = "mdio0";
+			groups = "mdio0_0_grp";
+		};
+
+		conf-mdio {
+			groups = "mdio0_0_grp";
+			slew-rate = <0>;
+			io-standard = <1>;
+			bias-disable;
+		};
+	};
+
+	pinctrl_gpio0_default: gpio0-default {
+		mux {
+			function = "gpio0";
+			groups = "gpio0_7_grp", "gpio0_8_grp", "gpio0_9_grp",
+				 "gpio0_10_grp", "gpio0_11_grp", "gpio0_12_grp",
+				 "gpio0_13_grp", "gpio0_14_grp";
+		};
+
+		conf {
+			groups = "gpio0_7_grp", "gpio0_8_grp", "gpio0_9_grp",
+				 "gpio0_10_grp", "gpio0_11_grp", "gpio0_12_grp",
+				 "gpio0_13_grp", "gpio0_14_grp";
+			slew-rate = <0>;
+			io-standard = <1>;
+		};
+
+		conf-pull-up {
+			pins = "MIO9", "MIO10", "MIO11", "MIO12", "MIO13", "MIO14";
+			bias-pull-up;
+		};
+
+		conf-pull-none {
+			pins = "MIO7", "MIO8";
+			bias-disable;
+		};
+	};
+
+	pinctrl_i2c0_default: i2c0-default {
+		mux {
+			groups = "i2c0_10_grp";
+			function = "i2c0";
+		};
+
+		conf {
+			groups = "i2c0_10_grp";
+			bias-pull-up;
+			slew-rate = <0>;
+			io-standard = <1>;
+		};
+	};
+
+	pinctrl_i2c0_gpio: i2c0-gpio {
+		mux {
+			groups = "gpio0_50_grp", "gpio0_51_grp";
+			function = "gpio0";
+		};
+
+		conf {
+			groups = "gpio0_50_grp", "gpio0_51_grp";
+			slew-rate = <0>;
+			io-standard = <1>;
+		};
+	};
+
+	pinctrl_sdhci0_default: sdhci0-default {
+		mux {
+			groups = "sdio0_2_grp";
+			function = "sdio0";
+		};
+
+		conf {
+			groups = "sdio0_2_grp";
+			slew-rate = <0>;
+			io-standard = <1>;
+			bias-disable;
+		};
+
+		mux-cd {
+			groups = "gpio0_0_grp";
+			function = "sdio0_cd";
+		};
+
+		conf-cd {
+			groups = "gpio0_0_grp";
+			bias-high-impedance;
+			bias-pull-up;
+			slew-rate = <0>;
+			io-standard = <1>;
+		};
+
+		mux-wp {
+			groups = "gpio0_15_grp";
+			function = "sdio0_wp";
+		};
+
+		conf-wp {
+			groups = "gpio0_15_grp";
+			bias-high-impedance;
+			bias-pull-up;
+			slew-rate = <0>;
+			io-standard = <1>;
+		};
+	};
+	pinctrl_uart1_default: uart1-default {
+		mux {
+			groups = "uart1_10_grp";
+			function = "uart1";
+		};
+
+		conf {
+			groups = "uart1_10_grp";
+			slew-rate = <0>;
+			io-standard = <1>;
+		};
+
+		conf-rx {
+			pins = "MIO49";
+			bias-high-impedance;
+		};
+
+		conf-tx {
+			pins = "MIO48";
+			bias-disable;
+		};
+	};
+
+	pinctrl_usb0_default: usb0-default {
+		mux {
+			groups = "usb0_0_grp";
+			function = "usb0";
+		};
+
+		conf {
+			groups = "usb0_0_grp";
+			slew-rate = <0>;
+			io-standard = <1>;
+		};
+
+		conf-rx {
+			pins = "MIO29", "MIO31", "MIO36";
+			bias-high-impedance;
+		};
+
+		conf-tx {
+			pins = "MIO28", "MIO30", "MIO32", "MIO33", "MIO34",
+			       "MIO35", "MIO37", "MIO38", "MIO39";
+			bias-disable;
+		};
+	};
+};
+
+&amba_pl {
+		#address-cells = <0x1>;
+		#size-cells = <0x1>;
+		compatible = "simple-bus";
+		ranges;
+
+		dma@40400000 {
+			#dma-cells = <0x1>;
+			compatible = "generic-uio";
+			interrupt-parent = <0x3>;
+			interrupts = <0x0 0x1d 0x4>;
+			reg = <0x40400000 0x10000>;
+
+			dma-channel@40400000 {
+				compatible = "xlnx,axi-dma-mm2s-channel";
+				interrupts = <0x0 0x1d 0x4>;
+				xlnx,datawidth = <0x40>;
+				xlnx,device-id = <0x0>;
+			};
+		};
+		dma@40410000 {
+			#dma-cells = <0x1>;
+			compatible = "generic-uio";
+			interrupt-parent = <0x3>;
+			interrupts = <0x0 0x1e 0x4>;
+			reg = <0x40410000 0x10000>;
+
+			dma-channel@40410030 {
+				compatible = "xlnx,axi-dma-s2mm-channel";
+				interrupts = <0x0 0x1e 0x4>;
+				xlnx,datawidth = <0x40>;
+				xlnx,device-id = <0x1>;
+			};
+		};
+
+		gpio@81200000 {
+			#gpio-cells = <0x2>;
+			compatible = "generic-uio";
+			gpio-controller;
+			reg = <0x81200000 0x10000>;
+			xlnx,all-inputs = <0x0>;
+			xlnx,all-inputs-2 = <0x0>;
+			xlnx,all-outputs = <0x0>;
+			xlnx,all-outputs-2 = <0x0>;
+			xlnx,dout-default = <0x0>;
+			xlnx,dout-default-2 = <0x0>;
+			xlnx,gpio-width = <0xc>;
+			xlnx,gpio2-width = <0x20>;
+			xlnx,interrupt-present = <0x0>;
+			xlnx,is-dual = <0x0>;
+			xlnx,tri-default = <0x0>;
+			xlnx,tri-default-2 = <0xffffffff>;
+		};
+
+		gp_reg_top@80000000 {
+			compatible = "generic-uio";
+			reg = <0x80000000 0x10000>;
+		};
+
+		gp_reg_top@83c00000 {
+			compatible = "generic-uio";
+			reg = <0x83c00000 0x10000>;
+		};
+
+		user_generic_irq@0 {
+			compatible = "generic-uio";
+			status = "okay";
+			interrupt-controller;
+			interrupt-parent = <0x3>;
+			interrupts = <0x0 0x1f 0x1>;
+		};
+
+		user_generic_irq@1 {
+			compatible = "generic-uio";
+			status = "okay";
+			interrupt-controller;
+			interrupt-parent = <0x3>;
+			interrupts = <0x0 0x20 0x1>;
+		};
+};
+
+
+&qspi {
+			clock-names = "ref_clk", "pclk";
+			clocks = <0x1 0xa 0x1 0x2b>;
+			compatible = "xlnx,zynq-qspi-1.0";
+			status = "okay";
+			interrupt-parent = <0x3>;
+			interrupts = <0x0 0x13 0x4>;
+			reg = <0xe000d000 0x1000>;
+			#address-cells = <0x1>;
+			#size-cells = <0x0>;
+			is-dual = <0x0>;
+			num-cs = <0x1>;
+
+			flash@0 {
+				compatible = "micron,n25q128a11";
+				reg = <0x0>;
+				#address-cells = <0x1>;
+				#size-cells = <0x1>;
+				spi-max-frequency = <0x2faf080>;
+
+				partition@0x00000000 {
+					label = "boot";
+					reg = <0x0 0x500000>;
+				};
+
+				partition@0x00500000 {
+					label = "bootenv";
+					reg = <0x500000 0x20000>;
+				};
+
+				partition@0x00520000 {
+					label = "kernel";
+					reg = <0x520000 0xa80000>;
+				};
+
+				partition@0x00fa0000 {
+					label = "spare";
+					reg = <0xfa0000 0x0>;
+				};
+			};
+
+			reserved-memory {
+				#address-cells = <0x1>;
+				#size-cells = <0x1>;
+				ranges;
+
+				mm2s_buffer@C800000 {
+					reg = <0xc800000 0x800000>;
+				};
+
+				s2mm_buffer@D000000 {
+					reg = <0xd000000 0x800000>;
+				};
+
+				pl_ddr@D800000 {
+					reg = <0xd800000 0x10000000>;
+				};
+			};
+};
+&sdhci0 {
+	u-boot,dm-pre-reloc;
+	status = "okay";
+	//pinctrl-names = "default";
+	//pinctrl-0 = <&pinctrl_sdhci0_default>;   //modify by YHL 2019-06-17 
+    xlnx,has-cd = <0x1>;
+    xlnx,has-power = <0x0>;
+    xlnx,has-wp = <0x0>;
+};
+&uart1 {
+	u-boot,dm-pre-reloc;
+	status = "okay";
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_uart1_default>;
+};
+
+&usb0 {
+	status = "okay";
+	dr_mode = "host";
+	usb-phy = <&usb_phy0>;
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_usb0_default>;
+};
