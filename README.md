@@ -16,7 +16,7 @@
    #!/bin/bash
      make -j12 && make uImage LOADADDR=0x4000 && cp arch/arm/boot/uImage /home/tftpboot/ && cp arch/arm/boot/dts/system-top.dtb /your dir<br>
 把your dir 更换成将要存放uImang 和 dts 文件路径<br>
-6. make   auto_com_uImage_cp.sh<br>
+6. source auto_com_uImage_cp.sh<br>
 7. 启动方式参考jUboot <br>
 
 
